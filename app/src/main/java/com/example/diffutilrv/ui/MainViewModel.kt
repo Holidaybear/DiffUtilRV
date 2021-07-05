@@ -17,22 +17,20 @@ class MainViewModel @Inject constructor(
 
     private val filterAction = MutableStateFlow(FilterStrategy.ByRole)
 
-    private val _uiState = filterAction.transform { strategy ->
-        emit(MainUiState.StateLoading)
-        try {
-            val employees = getEmployeesUseCase(strategy)
-            if (employees.isEmpty()) {
-                emit(MainUiState.StateEmpty)
-            } else {
-                emit(MainUiState.StateLoaded(employees))
-            }
-        } catch (exception: Exception) {
-            emit(MainUiState.StateError("Error Occurred!"))
-        }
-    }
-
     val uiState: Flow<MainUiState>
-        get() = _uiState
+        get() = filterAction.transform { strategy ->
+            emit(MainUiState.StateLoading)
+            try {
+                val employees = getEmployeesUseCase(strategy)
+                if (employees.isEmpty()) {
+                    emit(MainUiState.StateEmpty)
+                } else {
+                    emit(MainUiState.StateLoaded(employees))
+                }
+            } catch (exception: Exception) {
+                emit(MainUiState.StateError("Error Occurred!"))
+            }
+        }
 
     fun filterDataByName() {
         filterAction.value = FilterStrategy.ByName
